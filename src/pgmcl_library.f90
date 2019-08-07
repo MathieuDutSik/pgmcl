@@ -76,6 +76,28 @@ MODULE pgmcl_library
 !**********************************************************************
 !*                                                                    *
 !**********************************************************************
+      SUBROUTINE SplittingCommunicator(mod_in, comm_glob_in, comm_loc_out)
+      IMPLICIT NONE
+      integer, intent(in) :: mod_in, comm_glob_in
+      integer, intent(out) :: comm_loc_out
+      integer ierr, istat
+      integer, allocatable :: AllMod(:), Arr(:)
+      integer MyColor, MyKey
+      call mpi_comm_rank(comm_glob_in, my_rank, ierr)
+      call mpi_comm_size(comm_glob_in, my_size, ierr)
+      allocate(AllMod(my_size),stat=istat)
+      allocate(Arr(1), stat=istat)
+      Arr(1) = mod_in
+      MyColor = mod_in
+      MyKey = 0
+      CALL MPI_ALLGATHER(ArrMNE, 1, itype, AllMod, 1, itype, comm, ierr)
+      CALL MPI_COMM_SPLIT(comm_glob_in, MyColor, MyKey, MyCOMM, ierr)
+      comm_loc_out = MyCOMM
+      deallocate(AllMod, Arr)
+      END SUBROUTINE
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
       SUBROUTINE GetString (TheNb, eStr)
       implicit none
       character*4, intent(out) :: eStr
